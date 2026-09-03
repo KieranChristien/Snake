@@ -9,19 +9,9 @@ import main.java.snake.util.*;
 import java.awt.*;
 import java.util.Random;
 
+import static main.java.snake.constant.LevelConstants.*;
+
 public class Level {
-    public static final int GRID_SCALE = 38;
-    public static final int HALF_GRID_SCALE = GRID_SCALE / 2;
-    private static final int COLUMNS = 17;
-    private static final int ROWS = 15;
-
-    private static final int WIDTH = GRID_SCALE * COLUMNS;
-    private static final int HEIGHT = GRID_SCALE * ROWS;
-    private static final int MIN_X = (GameConstants.WINDOW_WIDTH - WIDTH) / 2;
-    private static final int MAX_X = MIN_X + WIDTH;
-    private static final int MIN_Y = (GameConstants.WINDOW_HEIGHT - HEIGHT - MIN_X);
-    private static final int MAX_Y = MIN_Y + HEIGHT;
-
     private static final Vec2 FRUIT_START = new Vec2(12.5, 7.5);
     private static final Vec2 PLAYER_START = new Vec2(3.5F, 7.5);
 
@@ -66,7 +56,7 @@ public class Level {
         // Game Level Grid
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLUMNS; col++) {
-                graphics.setColor((row % 2 == 0) != (col % 2 == 0) ? ColourConstants.GRID_COLOUR1 : ColourConstants.GRID_COLOUR2);
+                graphics.setColor((row % 2 == 0) != (col % 2 == 0) ? ColourConstants.GRID1 : ColourConstants.GRID2);
 
                 graphics.fillRect(
                         MIN_X + (col * GRID_SCALE),
@@ -87,25 +77,14 @@ public class Level {
         this.player.reset(GameConstants.START_DIR, PLAYER_START);
     }
 
-    public final Vec2i gridToActual(Vec2 position) {
-        return gridToActual(position.x(), position.y());
+    public final Vec2i gridToScreen(Vec2 position) {
+        return gridToScreen(position.x(), position.y());
     }
 
-    public final Vec2i gridToActual(double column, double row) {
+    public final Vec2i gridToScreen(double column, double row) {
         // Grid row is negative because drawn y-coordinates are flipped
         if (column >= COLUMNS || row >= ROWS || column < 0 || row < 0) throw new IllegalArgumentException("Position out of bounds: (" + column + ", " + row + ")");
         return new Vec2i(MIN_X + (int) (column * GRID_SCALE), MAX_Y + (int) (-row * GRID_SCALE));
-    }
-
-    public final Vec2 actualToGrid(Vec2i position) {
-        return actualToGrid(position.getX(), position.getY());
-    }
-
-    public final Vec2 actualToGrid(int x, int y) {
-        int column = (x - MIN_X) / GRID_SCALE;
-        int row = (y - MIN_Y) / GRID_SCALE;
-        if (column >= COLUMNS || row >= ROWS || column < 0 || row < 0) throw new IllegalArgumentException("Position out of bounds");
-        return new Vec2(x, y);
     }
 
     public final boolean didPlayerHitWall() {
@@ -117,6 +96,10 @@ public class Level {
 
     public final boolean didPlayerHitSelf() {
         return this.player.hitSelf();
+    }
+
+    public final int getScore() {
+        return Math.clamp(this.player.length() - 3, 0, (COLUMNS * ROWS) - 3);
     }
 
     public final Player getPlayer() {
@@ -144,105 +127,105 @@ public class Level {
             this.random = random;
 
             for (int i = 0; i < size; i++) {
-                free[i] = i;
-                indexOf[i] = i;
+                this.free[i] = i;
+                this.indexOf[i] = i;
             }
         }
 
-        private Vec2i toPosition(int pos) {
-            this.checkPos(pos);
-            return new Vec2i(pos % COLUMNS, pos / COLUMNS);
+        private Vec2i asGrid(int index) {
+            this.checkIndex(index);
+            return new Vec2i(index % COLUMNS, index / COLUMNS);
         }
 
-        private int toPos(Vec2i pos) {
-            this.checkXY(pos.getX(), pos.getY());
+        private int asIndex(Vec2i pos) {
+            this.checkPos(pos.getX(), pos.getY());
             return pos.getY() * COLUMNS + pos.getX();
         }
 
-        private void checkPos(int pos) {
-            if (pos < 0 || pos >= free.length) throw new IndexOutOfBoundsException("pos: " + pos);
+        private void checkIndex(int pos) {
+            if (pos < 0 || pos >= this.free.length) throw new IndexOutOfBoundsException("pos: " + pos);
         }
 
-        private void checkXY(int x, int y) {
+        private void checkPos(int x, int y) {
             if (x < 0 || x >= COLUMNS || y < 0 || y >= ROWS)
                 throw new IndexOutOfBoundsException("x,y: " + x + "," + y);
         }
 
         public Vec2i pickRandomFree() {
             if (this.freeCount == 0) throw new IllegalStateException("no free positions");
-            int r = this.random.nextInt(this.freeCount);
-            int pos = this.free[r];
+            int random = this.random.nextInt(this.freeCount);
+            int index = this.free[random];
 
-            this.occupyPosition(pos);
-            return this.toPosition(pos);
+            this.occupyPosition(index);
+            return this.asGrid(index);
         }
 
         void occupyPosition(Vec2i pos) {
-            this.checkXY(pos.getX(), pos.getY());
-            this.occupyPosition(this.toPos(pos));
+            this.checkPos(pos.getX(), pos.getY());
+            this.occupyPosition(this.asIndex(pos));
         }
 
         void occupyPosition(int pos) {
-            this.checkPos(pos);
-            int idx = this.indexOf[pos];
+            this.checkIndex(pos);
+            int index = this.indexOf[pos];
             if (this.isOccupied(pos)) return;
 
             int last = this.free[this.freeCount - 1];
-            this.free[idx] = last;
-            this.indexOf[last] = idx;
+            this.free[index] = last;
+            this.indexOf[last] = index;
             this.freeCount--;
             this.indexOf[pos] = -1;
         }
 
         void freePosition(Vec2i pos) {
-            this.checkXY(pos.getX(), pos.getY());
-            this.freePosition(this.toPos(pos));
+            this.checkPos(pos.getX(), pos.getY());
+            this.freePosition(this.asIndex(pos));
         }
 
-        void freePosition(int pos) {
-            this.checkPos(pos);
-            if (!this.isOccupied(pos)) return;
-            free[freeCount] = pos;
-            indexOf[pos] = freeCount;
-            freeCount++;
+        void freePosition(int index) {
+            this.checkIndex(index);
+            if (!this.isOccupied(index)) return;
+            this.free[this.freeCount] = index;
+            this.indexOf[index] = this.freeCount;
+            this.freeCount++;
         }
 
         public boolean isOccupied(Vec2i pos) {
-            this.checkXY(pos.getX(), pos.getY());
-            return this.isOccupied(this.toPos(pos));
+            this.checkPos(pos.getX(), pos.getY());
+            return this.isOccupied(this.asIndex(pos));
         }
 
-        public boolean isOccupied(int pos) {
-            this.checkPos(pos);
-            return indexOf[pos] == -1;
+        public boolean isOccupied(int index) {
+            this.checkIndex(index);
+            return this.indexOf[index] == -1;
         }
 
         public int freeCount() {
-            return freeCount;
+            return this.freeCount;
         }
 
         public int capacity() {
-            return free.length;
+            return this.free.length;
         }
 
         public void reset() {
-            for (int i = 0; i < free.length; i++) {
-                free[i] = i;
-                indexOf[i] = i;
+            for (int index = 0; index < this.free.length; index++) {
+                this.free[index] = index;
+                this.indexOf[index] = index;
             }
-            freeCount = free.length;
+            this.freeCount = this.free.length;
         }
 
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            for (int y = 0; y < ROWS; y++) {
+            for (int y = ROWS - 1; y >= 0; y--) {
                 for (int x = 0; x < COLUMNS; x++) {
                     int pos = y * COLUMNS + x;
                     sb.append(isOccupied(pos) ? '1' : '0');
                     if (x < COLUMNS - 1) sb.append(' ');
                 }
-                if (y < ROWS - 1) sb.append('\n');
+                if (y > 0) sb.append('\n');
             }
             return sb.toString();
         }

@@ -3,6 +3,7 @@ package main.java.snake.entity;
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
 import main.java.snake.Level;
+import main.java.snake.constant.LevelConstants;
 import main.java.snake.util.*;
 
 import java.awt.*;
@@ -10,7 +11,7 @@ import java.util.*;
 
 public class Player {
     private static final float SEGMENT_SIZE = 0.75F;
-    private static final int SEGMENT_VISUAL_SIZE = (int) (SEGMENT_SIZE * Level.GRID_SCALE);
+    private static final int SEGMENT_VISUAL_SIZE = (int) (SEGMENT_SIZE * LevelConstants.GRID_SCALE);
     private static final int MAX_LENGTH = 255;
     private final Level level;
     private final int segmentOffset;
@@ -41,15 +42,15 @@ public class Player {
 
         ListIterator<Segment> reversed = this.segments.reversed().listIterator();
         Segment next = reversed.hasNext() ? reversed.next() : null;
-        Vec2i connectFrom = next != null ? this.level.gridToActual(next.position()) : null;
+        Vec2i connectFrom = next != null ? this.level.gridToScreen(next.position()) : null;
 
-        graphics.setColor(ColourConstants.PLAYER_COLOUR);
+        graphics.setColor(ColourConstants.SNAKE);
 
         while (next != null) {
             Segment current = next;
             next = reversed.hasNext() ? reversed.next() : null;
 
-            Vec2i visualPos = current.level().gridToActual(current.position());
+            Vec2i visualPos = current.level().gridToScreen(current.position());
             boolean isEnd = current.equals(this.getHead()) || current.equals(this.segments.getLast());
 
             if (isEnd) graphics.fillOval(
@@ -63,7 +64,7 @@ public class Player {
             if (next != null) {
                 if (current.facing() != next.facing()) {
                     Vec2 cornerPos =  current.facing().isHorizontal() && next.facing().isVertical() ? new Vec2(next.position().x(), current.position().y()) : new Vec2(current.position().x(), next.position().y());
-                    Vec2i cornerVisual = this.level.gridToActual(cornerPos);
+                    Vec2i cornerVisual = this.level.gridToScreen(cornerPos);
 
                     graphics.fillOval(
                             cornerVisual.getX() - (this.level.getHalfGridScale()) + this.segmentOffset,
@@ -75,7 +76,11 @@ public class Player {
                     connectTo = cornerVisual;
                 }
             } else {
-                connectTo = this.level.gridToActual(current.position());
+                connectTo = visualPos;
+
+                // TODO: Fix scaling
+                /*this.sprite.setScale(0.1);
+                this.sprite.draw(graphics, visualPos.getX(), visualPos.getY());*/
             }
 
             if (connectTo != null) {
@@ -105,15 +110,15 @@ public class Player {
 
         // Display hitbox
         if (GameConstants.debugHitboxes) {
+            graphics.setColor(Color.white);
+            int grid = this.level().getGridScale();
+
             for (Segment segment : this.segments) {
-                int grid = this.level().getGridScale();
 
                 Hitbox hitbox = segment.hitbox();
-                Vec2i hitboxCenter = segment.level().gridToActual(hitbox.getCenter());
+                Vec2i hitboxCenter = segment.level().gridToScreen(hitbox.getCenter());
                 int width = (int) (segment.getHitboxWidth() * grid);
                 int height = (int) (segment.getHitboxHeight() * grid);
-
-                graphics.setColor(Color.white);
                 graphics.drawRect(
                         hitboxCenter.getX() - (width / 2),
                         hitboxCenter.getY() - (height / 2),
@@ -160,9 +165,16 @@ public class Player {
 
     public final boolean hitSelf() {
         Player.Head head = this.getHead();
+        Vec2i dimensions = switch (this.getFacing()) {
+            case UP, DOWN -> new Vec2i(1, 0);
+            case LEFT, RIGHT -> new Vec2i(0, 1);
+        };
+
+        Hitbox faceHitbox = Hitbox.ofSize(this.getFacePosition(), dimensions.getX(), dimensions.getY());
+
         for (Player.Segment segment : segments) {
             if (segment.equals(head)) continue;
-            if (segment.hitbox().intersects(this.getFacePosition(), this.getFacePosition())) return true;
+            if (segment.hitbox().intersects(faceHitbox)) return true;
         }
 
         return false;

@@ -22,7 +22,7 @@ public class Fruit extends Entity {
         double t = (Now.now() - GameConstants.START_NANO) / 1_000_000_000.0;
         double scale = 1 + 0.2 * Math.sin(Math.PI * t);
 
-        Vec2i visualCenter = this.level().gridToActual(Vec2.atCenterOf(this.gridPosition()));
+        Vec2i visualCenter = this.level().gridToScreen(Vec2.atCenterOf(this.gridPosition()));
 
         this.appleSprite.setScale(scale);
         this.appleSprite.draw(
@@ -36,7 +36,7 @@ public class Fruit extends Entity {
             int grid = this.level().getGridScale();
 
             Hitbox hitbox = this.hitbox();
-            Vec2i hitboxCenter = this.level().gridToActual(hitbox.getCenter());
+            Vec2i hitboxCenter = this.level().gridToScreen(hitbox.getCenter());
             int width = (int) (this.getHitboxWidth() * grid);
             int height = (int) (this.getHitboxHeight() * grid);
 

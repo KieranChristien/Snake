@@ -2,7 +2,9 @@ package main.java.snake;
 
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
+import main.java.snake.constant.WindowConstants;
 import main.java.snake.ui.ControlsHint;
+import main.java.snake.ui.Scoreboard;
 import main.java.snake.util.Direction;
 import main.java.snake.util.Now;
 
@@ -24,8 +26,8 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
     private GameState state;
 
     public GameLoop() {
-        setPreferredSize(new Dimension(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT));
-        setBackground(ColourConstants.BACKGROUND_COLOUR);
+        setPreferredSize(new Dimension(WindowConstants.WIDTH, WindowConstants.HEIGHT));
+        setBackground(ColourConstants.BACKGROUND);
 
         addKeyListener(this);
         setFocusable(true);
@@ -45,13 +47,25 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
         // Update now
         Now.set(System.nanoTime());
 
+        // Save old colour
+        Color cOld = graphics.getColor();
+
         // Draw the level
         this.level.draw(graphics, graphics2D);
 
         // Draw UI
+        graphics.setColor(ColourConstants.TOP);
+        graphics.fillRect(0, 0, WindowConstants.WIDTH, WindowConstants.TOP_MARGIN);
+        graphics.setColor(ColourConstants.TOP_DIVIDER);
+        graphics.drawLine(0, WindowConstants.TOP_MARGIN, WindowConstants.WIDTH, WindowConstants.TOP_MARGIN);
+
+        Scoreboard.draw(graphics2D, String.valueOf(this.level.getScore()));
+
         if (this.state == GameState.START_MENU) {
             ControlsHint.draw(graphics2D);
         }
+
+        graphics.setColor(cOld);
     }
 
     private void queueInput(Direction input) {
@@ -90,10 +104,10 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
             // Get next direction when aligned to grid
             if (this.level.getPlayer().isAligned() && !this.inputQueue.isEmpty()) this.input = this.inputQueue.poll();
 
-            // End game if players hits wall
-            if (this.level.didPlayerHitWall() || this.level.didPlayerHitSelf()) this.state = GameState.GAME_OVER;
-
             this.level.tick(this.input);
+
+            // End game if players hits wall or self
+            if (this.level.didPlayerHitWall() || this.level.didPlayerHitSelf()) this.state = GameState.GAME_OVER;
         }
 
         this.repaint();
