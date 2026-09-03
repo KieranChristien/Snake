@@ -91,4 +91,4 @@ Contains the components responsible for displaying menus and other user-interfac
 This project is a rough recreation of Google Snake and is primarily intended as a personal and learning project.
 
 ## License
-
+This project is licensed under the [MIT License](LICENSE).
