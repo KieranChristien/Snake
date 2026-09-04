@@ -185,7 +185,8 @@ public class Player {
         // Then continue animation
         double distanceToFruit = this.level().getFruit().position().distanceTo(this.getFacePosition());
         if (distanceToFruit <= 2.5) {
-            if (this.mouthSprite.getProgress() < 0.5) this.mouthSprite.setProgress(this.mouthSprite.getProgress() + 0.02);
+            if (this.mouthSprite.getProgress() < 0.5)
+                this.mouthSprite.setProgress(this.mouthSprite.getProgress() + 0.02);
         } else if (this.mouthSprite.getProgress() > 0 && this.mouthSprite.getProgress() < 1) {
             this.mouthSprite.setProgress(this.mouthSprite.getProgress() + 0.02);
             if (this.mouthSprite.getProgress() == 1) this.mouthSprite.setProgress(0);
@@ -259,7 +260,7 @@ public class Player {
         return facing.getUnitVec2().scale(scale);
     }
 
-    public final void move() {
+    public final void travel() {
         for (int i = this.segments.size() - 1; i >= 0; --i) {
             Segment current = this.segments.get(i);
             Vec2 delta = this.getMoveDelta(current.facing(), 0.05);
@@ -280,7 +281,7 @@ public class Player {
             Vec2 diff = current.position().subtract(current.nextPosition());
             if ((Mth.round(Math.abs(diff.x()), 2) + Mth.round(Math.abs(diff.y()), 2) == 0.0)) {
                 if (i > 0) current.setFacing(this.segments.get(i - 1).facing());
-                current.setNextPosition(current.position().relative(current.facing()));
+                current.setNextPosition();
             }
         }
     }
@@ -350,7 +351,7 @@ public class Player {
     public final void addHead(Direction facing, Vec2 position) {
         if (!this.segments.isEmpty()) throw new IllegalStateException("Cannot add head: already contains segments");
 
-        this.segments.addFirst(new Head(this.level, facing, position, position));
+        this.segments.addFirst(new Head(this.level, facing, position));
     }
 
     public final void addSegment() {
@@ -372,11 +373,11 @@ public class Player {
 
             Segment previous = this.segments.getLast();
             Direction prevFacing = previous.facing();
+
             this.segments.add(new Segment(
                     this.level,
                     previous.facing(),
-                    noGap ? previous.position() : previous.position().relative(prevFacing.getOpposite()),
-                    previous.nextPosition()
+                    noGap ? previous.position() : previous.position().relative(prevFacing.getOpposite())
             ));
         }
     }
@@ -412,8 +413,8 @@ public class Player {
     }
 
     public static class Head extends Segment {
-        public Head(Level level, Direction facing, Vec2 position, Vec2 nextPosition) {
-            super(level, facing, position, nextPosition);
+        public Head(Level level, Direction facing, Vec2 position) {
+            super(level, facing, position);
         }
     }
 
@@ -421,10 +422,10 @@ public class Player {
         private Direction facing;
         private Vec2 nextPosition;
 
-        public Segment(Level level, Direction facing, Vec2 position, Vec2 nextPosition) {
+        public Segment(Level level, Direction facing, Vec2 position) {
             super(level, position, SEGMENT_SIZE);
             this.facing = facing;
-            this.nextPosition = nextPosition;
+            this.setNextPosition();
         }
 
         public final Direction facing() {
@@ -439,8 +440,17 @@ public class Player {
             return this.nextPosition;
         }
 
-        public final void setNextPosition(Vec2 nextPosition) {
-            this.nextPosition = nextPosition;
+        public final void setNextPosition() {
+            double x = this.position().x();
+            double y = this.position().y();
+
+            if (this.facing().isHorizontal()) {
+                x = Math.floor(x) + 0.5;
+            } else {
+                y = Math.floor(y) + 0.5;
+            }
+
+            this.nextPosition = new Vec2(x, y).relative(this.facing());
         }
     }
 }

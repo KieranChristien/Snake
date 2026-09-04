@@ -16,7 +16,7 @@ import static main.java.snake.constant.LevelConstants.*;
 
 public class Level {
     private static final Vec2 FRUIT_START = new Vec2(12.5, 7.5);
-    private static final Vec2 PLAYER_START = new Vec2(3.5F, 7.5);
+    private static final Vec2 PLAYER_START = new Vec2(4F, 7.5);
 
     private final Fruit fruit;
     private final Player player;
@@ -37,7 +37,7 @@ public class Level {
             this.player.setFacing(input);
         }
 
-        this.player.move();
+        this.player.travel();
 
         if (this.player.isAligned()) {
             // Update Occupancy
