@@ -3,6 +3,7 @@ package main.java.snake.core;
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
 import main.java.snake.constant.WindowConstants;
+import main.java.snake.io.Data;
 import main.java.snake.math.Direction;
 import main.java.snake.rendering.ui.ControlsHint;
 import main.java.snake.rendering.ui.Scoreboard;
@@ -23,6 +24,7 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
 
     private Direction input;
     private GameState state;
+    private int highScore;
 
     public GameLoop() {
         setPreferredSize(new Dimension(WindowConstants.WIDTH, WindowConstants.HEIGHT));
@@ -55,7 +57,7 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
         graphics.setColor(ColourConstants.TOP_DIVIDER);
         graphics.drawLine(0, WindowConstants.TOP_MARGIN, WindowConstants.WIDTH, WindowConstants.TOP_MARGIN);
 
-        Scoreboard.draw(graphics2D, String.valueOf(this.level.getScore()));
+        Scoreboard.draw(graphics2D, this.level.getScore(), this.getHighScore());
 
         if (this.state == GameState.START_MENU) {
             ControlsHint.draw(graphics2D);
@@ -83,6 +85,8 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
     }
 
     private void reset() {
+        if (this.getHighScore() < this.level.getScore()) this.setHighScore(this.level.getScore());
+
         this.input = GameConstants.START_DIR;
         this.inputQueue.clear();
         this.state = GameState.START_MENU;
@@ -92,6 +96,18 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
     private void pause() {
         this.inputQueue.clear();
         this.state = GameState.START_MENU;
+    }
+
+    private void setHighScore(int score) {
+        this.highScore = score;
+
+        Data.saveHighScore(score);
+    }
+
+    private int getHighScore() {
+        int fileHighScore = Data.loadHighScore();
+        if (fileHighScore != 0) return fileHighScore;
+        return this.highScore;
     }
 
     @Override
