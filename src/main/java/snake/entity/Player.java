@@ -268,7 +268,7 @@ public class Player {
             if (i > 0) {
                 Segment next = this.segments.get(i - 1); // predecessor toward head
                 Vec2 nextDiff = next.position().subtract(current.position());
-                if ((Mth.round(Math.abs(nextDiff.x), 2) + Mth.round(Math.abs(nextDiff.y), 2) >= 1.0)) {
+                if ((Mth.round(Math.abs(nextDiff.x()), 2) + Mth.round(Math.abs(nextDiff.y()), 2) >= 1.0)) {
                     current.setPos(current.position().add(delta));
                 }
             } else {
@@ -278,7 +278,7 @@ public class Player {
 
             // Update facing and nextPosition when reached nextPosition
             Vec2 diff = current.position().subtract(current.nextPosition());
-            if ((Mth.round(Math.abs(diff.x), 2) + Mth.round(Math.abs(diff.y), 2) == 0.0)) {
+            if ((Mth.round(Math.abs(diff.x()), 2) + Mth.round(Math.abs(diff.y()), 2) == 0.0)) {
                 if (i > 0) current.setFacing(this.segments.get(i - 1).facing());
                 current.setNextPosition(current.position().relative(current.facing()));
             }
@@ -328,10 +328,10 @@ public class Player {
         Vec2 center = headHitbox.getCenter();
 
         return switch (this.getFacing()) {
-            case DOWN -> new Vec2(center.x, headHitbox.minY);
-            case UP -> new Vec2(center.x, headHitbox.maxY);
-            case LEFT -> new Vec2(headHitbox.minX, center.y);
-            case RIGHT -> new Vec2(headHitbox.maxX, center.y);
+            case DOWN -> new Vec2(center.x(), headHitbox.minY);
+            case UP -> new Vec2(center.x(), headHitbox.maxY);
+            case LEFT -> new Vec2(headHitbox.minX, center.y());
+            case RIGHT -> new Vec2(headHitbox.maxX, center.y());
         };
     }
 

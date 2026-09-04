@@ -26,7 +26,7 @@ public class Hitbox {
     }
     
     public Hitbox(final Vec2 begin, final Vec2 end) {
-        this(begin.x, begin.y, end.x, end.y);
+        this(begin.x(), begin.y(), end.x(), end.y());
     }
     
     public Hitbox setMinX(final double minX) {
@@ -92,7 +92,7 @@ public class Hitbox {
     }
 
     public Hitbox expandTowards(final Vec2 delta) {
-        return this.expandTowards(delta.x, delta.y);
+        return this.expandTowards(delta.x(), delta.y());
     }
 
     public Hitbox expandTowards(final double xa, final double ya) {
@@ -152,7 +152,7 @@ public class Hitbox {
     }
 
     public Hitbox move(final Vec2 pos) {
-        return this.move(pos.x, pos.y);
+        return this.move(pos.x(), pos.y());
     }
 
     public boolean intersects(final Hitbox hitbox) {
@@ -164,7 +164,7 @@ public class Hitbox {
     }
 
     public boolean intersects(final Vec2 min, final Vec2 max) {
-        return this.intersects(Math.min(min.x, max.x), Math.min(min.y, max.y), Math.max(min.x, max.x), Math.max(min.y, max.y));
+        return this.intersects(Math.min(min.x(), max.x()), Math.min(min.y(), max.y()), Math.max(min.x(), max.x()), Math.max(min.y(), max.y()));
     }
 
     public boolean intersects(final GridPos pos) {
@@ -172,7 +172,7 @@ public class Hitbox {
     }
 
     public boolean contains(final Vec2 vec) {
-        return this.contains(vec.x, vec.y);
+        return this.contains(vec.x(), vec.y());
     }
 
     public boolean contains(final double x, final double y) {
@@ -207,8 +207,8 @@ public class Hitbox {
 
     public static Optional<Vec2> clip(final double minX, final double minY, final double maxX, final double maxY, final Vec2 from, final Vec2 to) {
         double[] scaleReference = new double[]{(double)1.0F};
-        double dx = to.x - from.x;
-        double dy = to.y - from.y;
+        double dx = to.x() - from.x();
+        double dy = to.y() - from.y();
         Direction direction = getDirection(minX, minY, maxX, maxY, from, scaleReference, (Direction)null, dx, dy);
         if (direction == null) {
             return Optional.empty();
@@ -224,15 +224,15 @@ public class Hitbox {
 
     private static Direction getDirection(final double minX, final double minY, final double maxX, final double maxY, final Vec2 from, final double[] scaleReference, Direction direction, final double dx, final double dy) {
         if (dx > Mth.EPSILON) {
-            direction = clipPoint(scaleReference, direction, dx, dy, minX, minY, maxY, Direction.LEFT, from.x, from.y);
+            direction = clipPoint(scaleReference, direction, dx, dy, minX, minY, maxY, Direction.LEFT, from.x(), from.y());
         } else if (dx < -Mth.EPSILON) {
-            direction = clipPoint(scaleReference, direction, dx, dy, maxX, minY, maxY, Direction.RIGHT, from.x, from.y);
+            direction = clipPoint(scaleReference, direction, dx, dy, maxX, minY, maxY, Direction.RIGHT, from.x(), from.y());
         }
 
         if (dy > Mth.EPSILON) {
-            direction = clipPoint(scaleReference, direction, dy, dx, minY, minX, maxX, Direction.DOWN, from.y, from.x);
+            direction = clipPoint(scaleReference, direction, dy, dx, minY, minX, maxX, Direction.DOWN, from.y(), from.x());
         } else if (dy < -Mth.EPSILON) {
-            direction = clipPoint(scaleReference, direction, dy, dx, maxY, minX, maxX, Direction.UP, from.y, from.x);
+            direction = clipPoint(scaleReference, direction, dy, dx, maxY, minX, maxX, Direction.UP, from.y(), from.x());
         }
 
         return direction;
@@ -268,8 +268,8 @@ public class Hitbox {
     }
 
     public double distanceToSqr(final Vec2 point) {
-        double dx = Math.max(Math.max(this.minX - point.x, point.x - this.maxX), 0.0F);
-        double dy = Math.max(Math.max(this.minY - point.y, point.y - this.maxY), 0.0F);
+        double dx = Math.max(Math.max(this.minX - point.x(), point.x() - this.maxX), 0.0F);
+        double dy = Math.max(Math.max(this.minY - point.y(), point.y() - this.maxY), 0.0F);
         return dx * dx + dy * dy;
     }
 
@@ -300,6 +300,6 @@ public class Hitbox {
     }
 
     public static Hitbox ofSize(final Vec2 center, final double sizeX, final double sizeY) {
-        return new Hitbox(center.x - sizeX / (double)2.0F, center.y - sizeY / (double)2.0F, center.x + sizeX / (double)2.0F, center.y + sizeY / (double)2.0F);
+        return new Hitbox(center.x() - sizeX / (double)2.0F, center.y() - sizeY / (double)2.0F, center.x() + sizeX / (double)2.0F, center.y() + sizeY / (double)2.0F);
     }
 }

@@ -4,7 +4,7 @@ import main.java.snake.math.Vec2;
 
 public record Dimensions(float width, float height) {
     public Hitbox makeHitbox(final Vec2 pos) {
-        return this.makeHitbox(pos.x, pos.y);
+        return this.makeHitbox(pos.x(), pos.y());
     }
 
     public Hitbox makeHitbox(final double x, final double y) {

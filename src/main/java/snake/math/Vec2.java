@@ -1,19 +1,12 @@
 package main.java.snake.math;
 
-public class Vec2 implements Position {
+public record Vec2(double x, double y) implements Position {
     public static final Vec2 ZERO;
     public static final Vec2 X_AXIS;
     public static final Vec2 Y_AXIS;
-    public final double x;
-    public final double y;
 
     public static Vec2 atCenterOf(final Vec2i pos) {
         return new Vec2((double) pos.getX() + 0.5F, (double) pos.getY() + 0.5F);
-    }
-
-    public Vec2(final double x, final double y) {
-        this.x = x;
-        this.y = y;
     }
 
     public Vec2(final Vec2i vec) {
@@ -185,14 +178,6 @@ public class Vec2 implements Position {
         double x = Mth.lerp(a, this.x, vec.x);
         double y = Mth.lerp(a, this.y, vec.y);
         return new Vec2(x, y);
-    }
-
-    public final double x() {
-        return this.x;
-    }
-
-    public final double y() {
-        return this.y;
     }
 
     public Vec2 projectedOn(final Vec2 onto) {

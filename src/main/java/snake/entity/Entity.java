@@ -37,7 +37,7 @@ public abstract class Entity {
     }
 
     public final void setPos(Vec2 pos) {
-        this.setPos(pos.x, pos.y);
+        this.setPos(pos.x(), pos.y());
     }
 
     public void setPos(double x, double y) {
@@ -50,7 +50,7 @@ public abstract class Entity {
         double roundedX = Mth.round(x, 2);
         double roundedY = Mth.round(y, 2);
 
-        if (this.position.x != x || this.position.y != y) {
+        if (this.position.x() != x || this.position.y() != y) {
             this.position = new Vec2(roundedX, roundedY);
             int fx = (int) Math.floor(roundedX);
             int fy = (int) Math.floor(roundedY);

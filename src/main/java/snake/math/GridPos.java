@@ -142,7 +142,7 @@ public class GridPos extends Vec2i {
     }
 
     public Vec2 clampLocationWithin(final Vec2 location) {
-        return new Vec2(Math.clamp(location.x, (float) this.getX() + 1.0E-5F, (double) this.getX() + (double) 1.0F - (double) 1.0E-5F), Math.clamp(location.y, (float) this.getY() + 1.0E-5F, (double) this.getY() + (double) 1.0F - (double) 1.0E-5F));
+        return new Vec2(Math.clamp(location.x(), (float) this.getX() + 1.0E-5F, (double) this.getX() + (double) 1.0F - (double) 1.0E-5F), Math.clamp(location.y(), (float) this.getY() + 1.0E-5F, (double) this.getY() + (double) 1.0F - (double) 1.0E-5F));
     }
 
     static {
