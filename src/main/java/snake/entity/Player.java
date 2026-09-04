@@ -19,8 +19,18 @@ public class Player {
     private final Level level;
     private final int segmentOffset;
     private final ArrayList<Segment> segments = new ArrayList<>();
+    private boolean isAlive = true;
 
-    private final AnimatedSprite sprite;
+    private static final int BLINK_MIN_SEC = 1;
+    private static final int BLINK_MAX_SEC = 3;
+    private static final int TONGUE_MIN_SEC = 10;
+    private static final int TONGUE_MAX_SEC = 15;
+    private final AnimatedSprite eyeSprite;
+    private final AnimatedSprite deathSprite;
+    private final AnimatedSprite mouthSprite;
+    private final AnimatedSprite tongueSprite;
+    private long blinkTime;
+    private long tongueTime;
 
     public Player(Level level, Direction facing, Vec2 position) {
         this.level = level;
@@ -29,14 +39,49 @@ public class Player {
 
         this.segmentOffset = (level.getGridScale() - (int) (SEGMENT_SIZE * level.getGridScale())) / 2;
 
-        this.sprite = new AnimatedSprite(ImageUtils.fromPath("snake/blink.png"), 84, 84, 9, 12);
-        this.sprite.setScale(0.5);
+        this.eyeSprite = new AnimatedSprite(
+                ImageUtils.fromPath("snake/blink.png"),
+                24,
+                AnimatedSprite.LoopType.PLAY_ONCE
+        );
+        this.eyeSprite.setScaleMethod(Sprite.ScaleMethod.BICUBIC);
+        this.eyeSprite.setScale(0.4);
+        this.blinkTime = this.getNextRandomTime(level, BLINK_MIN_SEC, BLINK_MAX_SEC);
+
+        this.deathSprite = new AnimatedSprite(
+                ImageUtils.fromPath("snake/die.png"),
+                37,
+                24,
+                AnimatedSprite.LoopType.HOLD_ON_LAST_FRAME
+        );
+        this.deathSprite.setScale(0.5);
+
+        this.mouthSprite = new AnimatedSprite(
+                ImageUtils.fromPath("snake/eat.png"),
+                15,
+                -1,
+                AnimatedSprite.LoopType.PLAY_ONCE
+        );
+
+        this.tongueSprite = new AnimatedSprite(
+                ImageUtils.fromPath("snake/tongue.png"),
+                21,
+                21,
+                AnimatedSprite.LoopType.PLAY_ONCE
+        );
+        this.eyeSprite.setScaleMethod(Sprite.ScaleMethod.BICUBIC);
+        this.tongueTime = this.getNextRandomTime(level, TONGUE_MIN_SEC, TONGUE_MAX_SEC);
     }
 
     public final void reset(Direction facing, Vec2 position) {
         this.segments.clear();
         this.addHead(facing, position);
         this.addSegments(2);
+        this.isAlive = true;
+    }
+
+    public final Long getNextRandomTime(Level level, int origin, int bound) {
+        return Time.now() + Time.secondsToNanos(level.getRandom().nextInt(origin, bound));
     }
 
     public final void draw(Graphics2D graphics) {
@@ -46,6 +91,30 @@ public class Player {
         ListIterator<Segment> reversed = this.segments.reversed().listIterator();
         Segment next = reversed.hasNext() ? reversed.next() : null;
         Vec2i connectFrom = next != null ? this.level.gridToScreen(next.position()) : null;
+
+        Vec2 tonguePos = this.getHead().position().relative(this.getFacing(), 0.8);
+        Vec2i tongueVisualPos = this.level.gridToScreen(tonguePos);
+
+        // Rotation of sprite based on facing direction
+        double spriteRotation = switch (this.getFacing()) {
+            case DOWN -> 90.0D;
+            case UP -> -90.0D;
+            case LEFT -> 180.0D;
+            default -> 0.0D;
+        };
+
+        if (this.isAlive) {
+            this.tongueSprite.setRotationDegrees(spriteRotation);
+
+            if (!this.tongueSprite.isStarted() && Time.now() >= this.tongueTime) {
+                this.tongueSprite.start();
+
+                this.tongueTime = this.getNextRandomTime(this.level, TONGUE_MIN_SEC, TONGUE_MAX_SEC);
+            }
+            if (this.tongueSprite.isStarted()) {
+                this.tongueSprite.draw(graphics, tongueVisualPos.getX(), tongueVisualPos.getY());
+            }
+        }
 
         graphics.setColor(ColourConstants.SNAKE);
 
@@ -107,6 +176,64 @@ public class Player {
             }
         }
 
+        Vec2 mouthPos = this.getHead().position()
+                .relative(this.getFacing(), 0.25);
+        Vec2i mouthVisualPos = this.level.gridToScreen(mouthPos);
+
+        // Start opening when close to fruit
+        // Pause at 0.5 until fruit is far
+        // Then continue animation
+        double distanceToFruit = this.level().getFruit().position().distanceTo(this.getFacePosition());
+        if (distanceToFruit <= 2.5) {
+            if (this.mouthSprite.getProgress() < 0.5) this.mouthSprite.setProgress(this.mouthSprite.getProgress() + 0.02);
+        } else if (this.mouthSprite.getProgress() > 0 && this.mouthSprite.getProgress() < 1) {
+            this.mouthSprite.setProgress(this.mouthSprite.getProgress() + 0.02);
+            if (this.mouthSprite.getProgress() == 1) this.mouthSprite.setProgress(0);
+        }
+
+        if (this.isAlive) {
+            this.mouthSprite.setRotationDegrees(spriteRotation);
+            this.mouthSprite.draw(graphics, mouthVisualPos.getX(), mouthVisualPos.getY());
+
+            float eyeSpacing = 0.3F;
+            float eyeOffset = 0.4F;
+            Vec2 leftEyePos = this.getHead().position()
+                    .relative(this.getFacing().getCounterClockWise(), eyeSpacing)
+                    .relative(this.getFacing().getOpposite(), eyeOffset);
+            Vec2i leftEyeVisualPos = this.level.gridToScreen(leftEyePos);
+            Vec2 rightEyePos = this.getHead().position()
+                    .relative(this.getFacing().getClockWise(), eyeSpacing)
+                    .relative(this.getFacing().getOpposite(), eyeOffset);
+            Vec2i rightEyeVisualPos = this.level.gridToScreen(rightEyePos);
+
+            // Look towards the fruit
+            this.eyeSprite.setRotationDegrees(
+                    this.getFacePosition().vectorTo(
+                            this.level().getFruit().position()
+                    ).normalize().toDegrees() - 90
+            );
+
+            this.eyeSprite.draw(graphics, leftEyeVisualPos.getX(), leftEyeVisualPos.getY());
+            this.eyeSprite.draw(graphics, rightEyeVisualPos.getX(), rightEyeVisualPos.getY());
+            if (!this.eyeSprite.isStarted() && Time.now() >= this.blinkTime) {
+                this.eyeSprite.start();
+
+                this.blinkTime = this.getNextRandomTime(this.level, BLINK_MIN_SEC, BLINK_MAX_SEC);
+            }
+
+            if (this.deathSprite.isStarted()) this.deathSprite.stop();
+        } else {
+            Vec2 deathPos = this.getHead().position()
+                    .relative(this.getFacing(), -0.175);
+            Vec2i deathVisualPos = this.level.gridToScreen(deathPos);
+
+            this.deathSprite.setRotationDegrees(spriteRotation);
+
+            this.deathSprite.startIfStopped();
+            this.deathSprite.draw(graphics, deathVisualPos.getX(), deathVisualPos.getY());
+
+        }
+
         // Display hitbox
         if (GameConstants.debugHitboxes) {
             graphics.setColor(Color.white);
@@ -160,6 +287,14 @@ public class Player {
 
     public final boolean isAligned() {
         return Mth.round(this.getX() % 1, 2) == 0.5 && Mth.round(this.getY() % 1, 2) == 0.5;
+    }
+
+    public final void setAlive(boolean alive) {
+        this.isAlive = alive;
+    }
+
+    public final boolean isAlive() {
+        return this.isAlive;
     }
 
     public final boolean hitSelf() {

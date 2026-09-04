@@ -103,7 +103,10 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
             this.level.tick(this.input);
 
             // End game if players hits wall or self
-            if (this.level.didPlayerHitWall() || this.level.didPlayerHitSelf()) this.state = GameState.GAME_OVER;
+            if (this.level.didPlayerHitWall() || this.level.didPlayerHitSelf()) {
+                this.level.getPlayer().setAlive(false);
+                this.state = GameState.GAME_OVER;
+            }
         }
 
         this.repaint();

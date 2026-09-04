@@ -199,6 +199,10 @@ public class Vec2 implements Position {
         return onto.lengthSqr() == (double) 0.0F ? onto : onto.scale(this.dot(onto)).scale((double) 1.0F / onto.lengthSqr());
     }
 
+    public double toDegrees() {
+        return Math.atan2(this.x(), this.y()) * 180.0 / Math.PI;
+    }
+
     public boolean isFinite() {
         return Double.isFinite(this.x) && Double.isFinite(this.y);
     }
