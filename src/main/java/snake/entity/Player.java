@@ -2,15 +2,18 @@ package main.java.snake.entity;
 
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
-import main.java.snake.core.Level;
 import main.java.snake.constant.LevelConstants;
+import main.java.snake.core.Level;
 import main.java.snake.math.*;
-import main.java.snake.rendering.sprite.ImageUtils;
 import main.java.snake.rendering.sprite.AnimatedSprite;
+import main.java.snake.rendering.sprite.ImageUtils;
 import main.java.snake.rendering.sprite.Sprite;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 public class Player {
     private static final float SEGMENT_SIZE = 0.75F;

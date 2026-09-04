@@ -3,9 +3,9 @@ package main.java.snake.entity;
 import main.java.snake.constant.GameConstants;
 import main.java.snake.core.Level;
 import main.java.snake.math.Time;
-import main.java.snake.rendering.sprite.ImageUtils;
 import main.java.snake.math.Vec2;
 import main.java.snake.math.Vec2i;
+import main.java.snake.rendering.sprite.ImageUtils;
 import main.java.snake.rendering.sprite.Sprite;
 
 import java.awt.*;

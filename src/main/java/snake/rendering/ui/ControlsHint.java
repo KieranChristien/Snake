@@ -2,9 +2,9 @@ package main.java.snake.rendering.ui;
 
 import main.java.snake.constant.LevelConstants;
 import main.java.snake.constant.WindowConstants;
+import main.java.snake.math.Vec2i;
 import main.java.snake.rendering.sprite.ImageUtils;
 import main.java.snake.rendering.sprite.Sprite;
-import main.java.snake.math.Vec2i;
 
 import java.awt.*;
 
