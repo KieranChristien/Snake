@@ -1,6 +1,7 @@
 package main.java.snake;
 
-import main.java.snake.util.ImageUtils;
+import main.java.snake.core.GameLoop;
+import main.java.snake.rendering.sprite.ImageUtils;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;

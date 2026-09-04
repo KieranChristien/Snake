@@ -1,6 +1,6 @@
 package main.java.snake.entity;
 
-import main.java.snake.util.Vec2;
+import main.java.snake.math.Vec2;
 
 public record Dimensions(float width, float height) {
     public Hitbox makeHitbox(final Vec2 pos) {

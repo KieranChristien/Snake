@@ -1,4 +1,4 @@
-package main.java.snake.util;
+package main.java.snake.math;
 
 public interface Position {
     double x();

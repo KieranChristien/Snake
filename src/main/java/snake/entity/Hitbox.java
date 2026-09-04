@@ -1,10 +1,9 @@
 package main.java.snake.entity;
 
-import main.java.snake.constant.GameConstants;
-import main.java.snake.util.Direction;
-import main.java.snake.util.GridPos;
-import main.java.snake.util.Mth;
-import main.java.snake.util.Vec2;
+import main.java.snake.math.Direction;
+import main.java.snake.math.GridPos;
+import main.java.snake.math.Mth;
+import main.java.snake.math.Vec2;
 
 import java.util.List;
 import java.util.Optional;

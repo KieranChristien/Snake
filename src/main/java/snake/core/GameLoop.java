@@ -1,12 +1,11 @@
-package main.java.snake;
+package main.java.snake.core;
 
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
 import main.java.snake.constant.WindowConstants;
-import main.java.snake.ui.ControlsHint;
-import main.java.snake.ui.Scoreboard;
-import main.java.snake.util.Direction;
-import main.java.snake.util.Now;
+import main.java.snake.math.Direction;
+import main.java.snake.rendering.ui.ControlsHint;
+import main.java.snake.rendering.ui.Scoreboard;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,15 +36,12 @@ public class GameLoop extends JPanel implements KeyListener, ActionListener {
         this.level = new Level();
         this.state = GameState.START_MENU;
 
-        new Timer(8, this).start();
+        new Timer(10, this).start();
     }
 
     public void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
         Graphics2D graphics2D = (Graphics2D) graphics;
-
-        // Update now
-        Now.set(System.nanoTime());
 
         // Save old colour
         Color cOld = graphics.getColor();

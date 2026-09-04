@@ -1,6 +1,6 @@
-package main.java.snake.util;
+package main.java.snake.math;
 
-public class Mth {
+public final class Mth {
     public static final double EPSILON = 1.0E-7;
 
     public static double lengthSquared(final double x, final double y) {

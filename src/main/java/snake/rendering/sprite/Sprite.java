@@ -1,4 +1,4 @@
-package main.java.snake.util;
+package main.java.snake.rendering.sprite;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

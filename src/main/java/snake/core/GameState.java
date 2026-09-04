@@ -1,4 +1,4 @@
-package main.java.snake;
+package main.java.snake.core;
 
 public enum GameState {
     START_MENU,

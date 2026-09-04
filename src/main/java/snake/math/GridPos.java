@@ -1,4 +1,4 @@
-package main.java.snake.util;
+package main.java.snake.math;
 
 public class GridPos extends Vec2i {
     public static final GridPos ZERO;

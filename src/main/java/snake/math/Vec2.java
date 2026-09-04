@@ -1,4 +1,4 @@
-package main.java.snake.util;
+package main.java.snake.math;
 
 public class Vec2 implements Position {
     public static final Vec2 ZERO;

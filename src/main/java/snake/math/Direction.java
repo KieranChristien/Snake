@@ -1,4 +1,4 @@
-package main.java.snake.util;
+package main.java.snake.math;
 
 import java.util.stream.Stream;
 

@@ -2,9 +2,12 @@ package main.java.snake.entity;
 
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
-import main.java.snake.Level;
+import main.java.snake.core.Level;
 import main.java.snake.constant.LevelConstants;
-import main.java.snake.util.*;
+import main.java.snake.math.*;
+import main.java.snake.rendering.sprite.ImageUtils;
+import main.java.snake.rendering.sprite.AnimatedSprite;
+import main.java.snake.rendering.sprite.Sprite;
 
 import java.awt.*;
 import java.util.*;
@@ -63,7 +66,7 @@ public class Player {
             Vec2i connectTo = null;
             if (next != null) {
                 if (current.facing() != next.facing()) {
-                    Vec2 cornerPos =  current.facing().isHorizontal() && next.facing().isVertical() ? new Vec2(next.position().x(), current.position().y()) : new Vec2(current.position().x(), next.position().y());
+                    Vec2 cornerPos = current.facing().isHorizontal() && next.facing().isVertical() ? new Vec2(next.position().x(), current.position().y()) : new Vec2(current.position().x(), next.position().y());
                     Vec2i cornerVisual = this.level.gridToScreen(cornerPos);
 
                     graphics.fillOval(
@@ -77,18 +80,14 @@ public class Player {
                 }
             } else {
                 connectTo = visualPos;
-
-                // TODO: Fix scaling
-                /*this.sprite.setScale(0.1);
-                this.sprite.draw(graphics, visualPos.getX(), visualPos.getY());*/
             }
 
             if (connectTo != null) {
                 Vec2i to = connectTo.subtract(connectFrom);
                 Direction dirTo = Direction.getApproximateNearest(to);
                 Direction offset = switch (dirTo) {
-                    case UP, DOWN ->  Direction.LEFT;
-                    case LEFT, RIGHT ->  Direction.DOWN;
+                    case UP, DOWN -> Direction.LEFT;
+                    case LEFT, RIGHT -> Direction.DOWN;
                 };
 
                 boolean isNegative = dirTo == Direction.DOWN || dirTo == Direction.LEFT;

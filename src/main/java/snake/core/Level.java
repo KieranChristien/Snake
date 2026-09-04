@@ -1,10 +1,13 @@
-package main.java.snake;
+package main.java.snake.core;
 
 import main.java.snake.constant.ColourConstants;
 import main.java.snake.constant.GameConstants;
 import main.java.snake.entity.Fruit;
 import main.java.snake.entity.Player;
-import main.java.snake.util.*;
+import main.java.snake.math.Direction;
+import main.java.snake.math.GridPos;
+import main.java.snake.math.Vec2;
+import main.java.snake.math.Vec2i;
 
 import java.awt.*;
 import java.util.Random;
@@ -21,9 +24,9 @@ public class Level {
     private final OccupancyGrid grid;
 
     Level() {
+        this.random = new Random();
         this.fruit = new Fruit(this, FRUIT_START,  0.8F);
         this.player = new Player(this, GameConstants.START_DIR, PLAYER_START);
-        this.random = new Random();
 
         this.grid = new OccupancyGrid(COLUMNS * ROWS, this.random);
     }
@@ -83,7 +86,6 @@ public class Level {
 
     public final Vec2i gridToScreen(double column, double row) {
         // Grid row is negative because drawn y-coordinates are flipped
-        if (column >= COLUMNS || row >= ROWS || column < 0 || row < 0) throw new IllegalArgumentException("Position out of bounds: (" + column + ", " + row + ")");
         return new Vec2i(MIN_X + (int) (column * GRID_SCALE), MAX_Y + (int) (-row * GRID_SCALE));
     }
 
@@ -102,8 +104,16 @@ public class Level {
         return Math.clamp(this.player.length() - 3, 0, (COLUMNS * ROWS) - 3);
     }
 
+    public final Fruit getFruit() {
+        return this.fruit;
+    }
+
     public final Player getPlayer() {
         return this.player;
+    }
+
+    public final Random getRandom() {
+        return this.random;
     }
 
     public final int getGridScale() {

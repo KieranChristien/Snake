@@ -1,9 +1,9 @@
 package main.java.snake.entity;
 
-import main.java.snake.Level;
-import main.java.snake.util.GridPos;
-import main.java.snake.util.Mth;
-import main.java.snake.util.Vec2;
+import main.java.snake.core.Level;
+import main.java.snake.math.GridPos;
+import main.java.snake.math.Mth;
+import main.java.snake.math.Vec2;
 
 public abstract class Entity {
     private final Dimensions dimensions;

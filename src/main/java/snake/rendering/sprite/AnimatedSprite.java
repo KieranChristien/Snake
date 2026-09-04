@@ -1,4 +1,6 @@
-package main.java.snake.util;
+package main.java.snake.rendering.sprite;
+
+import main.java.snake.math.Time;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -21,20 +23,28 @@ public class AnimatedSprite extends Sprite {
     private int lastFrameIndex = -1;
 
     // Timing / playback
-    public long startTime = Now.now();
-    public long elapsedTime = 0L;
-    public boolean playing = true;
+    private long startTime = Time.now();
+    private long elapsedTime = 0L;
+    private boolean playing = true;
 
-    public AnimatedSprite(BufferedImage sheet, int frameW, int frameH, int frameCount, double fps) {
-        this(sheet, frameW, frameH, frameCount, fps, LoopType.LOOPING);
+    // Manual playback
+    private boolean manualPlayback = false;
+    private double normalisedTime = 0.0;
+
+    public AnimatedSprite(BufferedImage sheet, double fps, LoopType loopType) {
+        int remainder = sheet.getHeight() % sheet.getWidth();
+        if (remainder != 0)
+            throw new IllegalArgumentException("Sprite sheet height must be a multiple of sprite sheet width");
+        this(sheet, sheet.getWidth(), sheet.getWidth(), sheet.getHeight() / sheet.getWidth(), fps, loopType);
     }
 
-    /**
-     * sheet: sprite sheet image
-     * frameW/frameH: single frame size in pixels
-     * frameCount: total frames (left-to-right, top-to-bottom)
-     * fps: frames per second
-     */
+    public AnimatedSprite(BufferedImage sheet, int frameCount, double fps, LoopType loopType) {
+        int remainder = sheet.getHeight() % frameCount;
+        if (remainder != 0)
+            throw new IllegalArgumentException("Frame count must divide sprite height with no remainder");
+        this(sheet, sheet.getWidth(), sheet.getHeight() / frameCount, frameCount, fps, loopType);
+    }
+
     public AnimatedSprite(BufferedImage sheet, int frameW, int frameH, int frameCount, double fps, LoopType loopType) {
         super(sheet);
         if (frameW <= 0 || frameH <= 0) throw new IllegalArgumentException("invalid frame size");
@@ -53,6 +63,7 @@ public class AnimatedSprite extends Sprite {
             int cy = i / cols;
             int sx = cx * frameW;
             int sy = cy * frameH;
+
             // copy subimage into a new BufferedImage to avoid referencing parent sheet
             BufferedImage sub = new BufferedImage(frameW, frameH, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = sub.createGraphics();
@@ -72,7 +83,6 @@ public class AnimatedSprite extends Sprite {
         super.setScale(scale);
         // rebuild scaled frames lazily on next draw
         if (Double.compare(this.cachedScale, scale) != 0) {
-            this.cachedScale = scale;
             this.cacheFrames();
         }
     }
@@ -81,7 +91,6 @@ public class AnimatedSprite extends Sprite {
     public void setScaleMethod(ScaleMethod method) {
         super.setScaleMethod(method);
         if (this.cachedScaleMethod != method) {
-            this.cachedScaleMethod = method;
             this.cacheFrames();
         }
     }
@@ -120,21 +129,34 @@ public class AnimatedSprite extends Sprite {
     }
 
     private int currentFrameIndex() {
+        if (this.manualPlayback) {
+            // Map normalised time [0, 1] to frame index [0, frameCount - 1]
+            return (int) Math.round(this.normalisedTime * (this.frameCount - 1));
+        }
+
         if (this.playing) {
-            this.elapsedTime = Now.now() - this.startTime;
+            this.elapsedTime = Time.now() - this.startTime;
         }
 
         long frameNumber = this.elapsedTime / this.frameDurationNanos;
+
         if (frameNumber >= this.frameCount) {
             switch (this.loopType) {
-                case HOLD_ON_LAST_FRAME -> this.playing = false;
-                case PLAY_ONCE -> {
+                case LOOPING:
+                    return (int) (frameNumber % this.frameCount);
+
+                case HOLD_ON_LAST_FRAME:
+                    this.playing = false;
+                    return this.frameCount - 1;
+
+                case PLAY_ONCE:
                     this.playing = false;
                     this.elapsedTime = 0L;
-                }
+                    return 0;
             }
         }
-        return (int) (frameNumber % this.frameCount);
+
+        return (int) frameNumber;
     }
 
     @Override
@@ -144,7 +166,7 @@ public class AnimatedSprite extends Sprite {
 
         // if rotation is zero, use the cheap path: draw pre-scaled image directly
         if (Double.compare(super.getRotationDeg(), 0.0) == 0) {
-            int idx = currentFrameIndex();
+            int idx = this.currentFrameIndex();
             if (idx != lastFrameIndex) {
                 // update cached frame image
                 this.cachedFrameImage = this.cachedFrames[idx];
@@ -165,33 +187,81 @@ public class AnimatedSprite extends Sprite {
     }
 
     /**
-    * Start the animation from the beginning
-    * */
-    public void start() {
+     * Set the animation to a normalised position.
+     *
+     * @param value normalised position in the range [0, 1]
+     */
+    public void setProgress(double value) {
+        this.normalisedTime = Math.clamp(value, 0.0, 1.0);
+        this.manualPlayback = true;
+    }
+
+    /**
+     * Get the current normalised position.
+     */
+    public double getProgress() {
+        return this.normalisedTime;
+    }
+
+    /**
+     * Return to time-based playback.
+     */
+    public void useAutomaticPlayback() {
+        this.manualPlayback = false;
+        this.startTime = Time.now() - this.elapsedTime;
         this.playing = true;
-        this.startTime = Now.now();
+    }
+
+    /**
+     * Start the animation from the beginning
+     *
+     */
+    public void start() {
+        this.elapsedTime = 0L;
+        this.startTime = Time.now();
+        this.playing = true;
+    }
+
+    /**
+     * Start the animation from the beginning if stopped
+     *
+     */
+    public void startIfStopped() {
+        if (!this.playing) {
+            this.start();
+        }
     }
 
     /**
      * Resume the animation
-     * */
-    public void play() {
-        this.playing = true;
+     *
+     */
+    public void resume() {
+        if (!this.playing) {
+            this.startTime = Time.now();
+            this.playing = true;
+        }
     }
 
     /**
      * Pause the animation
-     * */
+     *
+     */
     public void pause() {
         this.playing = false;
     }
 
     /**
      * Stop and reset the animation
-     * */
+     *
+     */
     public void stop() {
         this.playing = false;
         this.elapsedTime = 0L;
+    }
+
+    public boolean isStarted() {
+        return this.playing;
     }
 
     @Override

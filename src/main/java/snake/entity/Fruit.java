@@ -1,8 +1,12 @@
 package main.java.snake.entity;
 
 import main.java.snake.constant.GameConstants;
-import main.java.snake.Level;
-import main.java.snake.util.*;
+import main.java.snake.core.Level;
+import main.java.snake.math.Time;
+import main.java.snake.rendering.sprite.ImageUtils;
+import main.java.snake.math.Vec2;
+import main.java.snake.math.Vec2i;
+import main.java.snake.rendering.sprite.Sprite;
 
 import java.awt.*;
 
@@ -19,7 +23,7 @@ public class Fruit extends Entity {
     public void draw(Graphics2D graphics) {
 
         // Animate scale
-        double t = (Now.now() - GameConstants.START_NANO) / 1_000_000_000.0;
+        double t = Time.nanosToSeconds((Time.now() - GameConstants.START_NANO));
         double scale = 1 + 0.2 * Math.sin(Math.PI * t);
 
         Vec2i visualCenter = this.level().gridToScreen(Vec2.atCenterOf(this.gridPosition()));
