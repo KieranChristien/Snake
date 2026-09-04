@@ -15,7 +15,7 @@ public class AnimatedSprite extends Sprite {
 
     // Caching fields
     private BufferedImage[] cachedFrames;
-    private double cachedScale = 1.0;
+    private double cachedScale;
     private Sprite.ScaleMethod cachedScaleMethod;
 
     // Current frame cache to avoid array indexing each draw
@@ -25,7 +25,7 @@ public class AnimatedSprite extends Sprite {
     // Timing / playback
     private long startTime = Time.now();
     private long elapsedTime = 0L;
-    private boolean playing = true;
+    private boolean playing = false;
 
     // Manual playback
     private boolean manualPlayback = false;
@@ -49,11 +49,14 @@ public class AnimatedSprite extends Sprite {
         super(sheet);
         if (frameW <= 0 || frameH <= 0) throw new IllegalArgumentException("invalid frame size");
         if (frameCount <= 0) throw new IllegalArgumentException("frameCount must be > 0");
-        if (fps <= 0) throw new IllegalArgumentException("fps must be > 0");
+        if (fps == 0) throw new IllegalArgumentException("fps must != 0");
         if (loopType == null) throw new IllegalArgumentException("loopType must not be null");
 
         this.frameCount = frameCount;
         this.frameDurationNanos = (long) (1_000_000_000.0 / fps);
+        if (this.frameDurationNanos < 0) {
+            this.manualPlayback = true;
+        }
         this.loopType = loopType;
 
         int cols = Math.max(1, sheet.getWidth() / frameW);
@@ -146,7 +149,6 @@ public class AnimatedSprite extends Sprite {
                     return (int) (frameNumber % this.frameCount);
 
                 case HOLD_ON_LAST_FRAME:
-                    this.playing = false;
                     return this.frameCount - 1;
 
                 case PLAY_ONCE:
