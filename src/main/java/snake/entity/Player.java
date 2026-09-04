@@ -33,6 +33,10 @@ public class Player {
     private long tongueTime;
 
     public Player(Level level, Direction facing, Vec2 position) {
+        if (Math.abs(facing.isHorizontal() ? position.y() : position.x() % 1) != 0.5) {
+            throw new IllegalArgumentException("Invalid starting position " + position + " for direction " + facing);
+        }
+
         this.level = level;
         this.addHead(facing, position);
         this.addSegments(2);
